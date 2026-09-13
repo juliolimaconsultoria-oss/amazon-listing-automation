@@ -131,6 +131,29 @@ def run_pipeline():
     return _capture_logs(_run)
 
 
+def run_refresh():
+    import research
+    import curation
+
+    def _run():
+        cfg = Config()
+        init_db(cfg.DB_PATH)
+        conn = get_db_connection()
+        try:
+            removed = conn.execute(
+                "SELECT COUNT(*) FROM products WHERE status = 'curated_rejected'"
+            ).fetchone()[0]
+            conn.execute("DELETE FROM products WHERE status = 'curated_rejected'")
+            conn.commit()
+            print(f"[atualizar] {removed} produto(s) rejeitado(s) removido(s).")
+        finally:
+            conn.close()
+        research.run(cfg)
+        curation.run(cfg)
+
+    return _capture_logs(_run)
+
+
 def reset_product(name):
     conn = get_db_connection()
     try:
@@ -190,6 +213,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             self._json_response({"status": "ok", "log": log})
         elif path == "/api/run-copy":
             log = run_copy()
+            self._json_response({"status": "ok", "log": log})
+        elif path == "/api/refresh":
+            log = run_refresh()
             self._json_response({"status": "ok", "log": log})
         elif path == "/api/reset":
             data = json.loads(body) if body else {}

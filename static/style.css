@@ -175,6 +175,14 @@ body {
 .btn-accent:hover { background: #9b59b6; }
 .btn-accent:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.btn-secondary {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+.btn-secondary:hover { background: #27ae60; }
+.btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .btn-group {
   display: flex;
   gap: 0.5rem;
