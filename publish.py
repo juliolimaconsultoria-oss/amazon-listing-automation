@@ -57,10 +57,10 @@ def run(config: Config) -> None:
     print(f"[publicacao] Listagens exportadas para: {filepath}")
 
     for product in products:
-        update_product_status(config.DB_PATH, product["name"], "published")
+        update_product_status(config.DB_PATH, product["name"], "exported")
 
     print(
-        f"[publicacao] {len(products)} produto(s) marcado(s) como publicado(s)."
+        f"[publicacao] {len(products)} produto(s) exportado(s) para revisão."
     )
     print("[publicacao] ATENÇÃO: Faça upload manual no Seller Central.")
 

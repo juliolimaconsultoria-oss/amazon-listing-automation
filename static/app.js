@@ -49,9 +49,9 @@ async function loadAll() {
 function renderStats() {
   document.getElementById('stat-total').textContent = stats.total || 0;
   document.getElementById('stat-approved').textContent =
-    (stats.curated_approved || 0) + (stats.copy_ready || 0) + (stats.published || 0);
+    (stats.curated_approved || 0) + (stats.copy_ready || 0) + (stats.exported || 0) + (stats.published || 0);
   document.getElementById('stat-rejected').textContent = stats.curated_rejected || 0;
-  document.getElementById('stat-published').textContent = stats.published || 0;
+  document.getElementById('stat-published').textContent = (stats.exported || 0) + (stats.published || 0);
 }
 
 // Status labels
@@ -60,6 +60,7 @@ const STATUS_LABELS = {
   curated_approved: 'Aprovado',
   curated_rejected: 'Rejeitado',
   copy_ready: 'Copy Pronta',
+  exported: 'Exportado',
   published: 'Publicado',
 };
 
