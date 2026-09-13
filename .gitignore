@@ -1,0 +1,6 @@
+.env
+.en
+data/pipeline.db
+data/output/
+__pycache__/
+*.pyc
