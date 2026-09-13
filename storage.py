@@ -14,6 +14,7 @@ def init_db(db_path: str) -> None:
                 competitor_rating REAL,
                 demand_score REAL,
                 notes TEXT,
+                url TEXT,
                 curation_score REAL,
                 status TEXT NOT NULL DEFAULT 'researched',
                 copy_data TEXT,
@@ -21,6 +22,12 @@ def init_db(db_path: str) -> None:
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        # Add url column to existing databases
+        try:
+            conn.execute("ALTER TABLE products ADD COLUMN url TEXT")
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass
         conn.commit()
     finally:
         conn.close()
@@ -43,8 +50,8 @@ def insert_product(db_path: str, product: dict) -> None:
         conn.execute(
             """INSERT INTO products
                (name, category, price_usd, competitor_reviews,
-                competitor_rating, demand_score, notes, status)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'researched')""",
+                competitor_rating, demand_score, notes, url, status)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'researched')""",
             (
                 product["name"],
                 product.get("category", ""),
@@ -53,6 +60,7 @@ def insert_product(db_path: str, product: dict) -> None:
                 float(product.get("competitor_rating", 0)),
                 float(product.get("demand_score", 0)),
                 product.get("notes", ""),
+                product.get("url", ""),
             ),
         )
         conn.commit()

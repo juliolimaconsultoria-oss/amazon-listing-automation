@@ -1,5 +1,11 @@
-name,category,price_usd,competitor_reviews,competitor_rating,demand_score,notes
-Silicone Kitchen Utensil Set,Kitchen,24.99,320,3.8,8,High demand on Best Sellers; competitors have quality complaints
-Portable Laptop Stand,Electronics,29.99,150,4.0,7,Movers & Shakers trending; lightweight aluminum designs popular
-Organic Cotton Tote Bag,Fashion,12.99,80,3.5,9,Google Trends rising; eco-friendly niche growing fast
-Phone Screen Protector 3-Pack,Electronics,5.99,12000,4.6,2,Saturated market; huge review counts and high ratings
+name,category,price_usd,competitor_reviews,competitor_rating,demand_score,url,notes
+Silicone Kitchen Utensil Set,Kitchen,24.99,320,3.8,8,https://www.amazon.com/dp/B08XYZ1234,High demand on Best Sellers; competitors have quality complaints
+Portable Laptop Stand,Electronics,29.99,150,4.0,7,https://www.amazon.com/dp/B09ABC5678,Movers & Shakers trending; lightweight aluminum designs popular
+Organic Cotton Tote Bag,Fashion,12.99,80,3.5,9,https://www.amazon.com/dp/B07DEF9012,Google Trends rising; eco-friendly niche growing fast
+Phone Screen Protector 3-Pack,Electronics,5.99,12000,4.6,2,https://www.amazon.com/dp/B08GHI3456,Saturated market; huge review counts and high ratings
+Bamboo Cutting Board Set,Kitchen,19.99,200,3.9,8,https://www.amazon.com/dp/B09JKL7890,Eco-friendly trend; competitors have warping complaints
+LED Desk Lamp with USB Charging,Office,34.99,450,4.1,7,https://www.amazon.com/dp/B08MNO1234,WFH trend strong; many lack USB-C
+Stainless Steel Water Bottle,Sports,16.99,900,4.2,6,https://www.amazon.com/dp/B07PQR5678,Steady demand; differentiation through insulation tech
+Resistance Bands Set,Fitness,14.99,280,3.7,8,https://www.amazon.com/dp/B09STU9012,Home gym trend; competitors report snapping issues
+Wireless Earbuds Under $30,Electronics,27.99,3500,4.3,5,https://www.amazon.com/dp/B08VWX3456,Competitive but huge volume; ANC is key differentiator
+Reusable Beeswax Food Wraps,Kitchen,13.99,60,3.4,9,https://www.amazon.com/dp/B07YZA7890,Sustainability niche; low competition with growing search volume

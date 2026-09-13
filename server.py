@@ -28,7 +28,7 @@ def get_products():
     try:
         rows = conn.execute(
             "SELECT name, category, price_usd, competitor_reviews, "
-            "competitor_rating, demand_score, notes, curation_score, "
+            "competitor_rating, demand_score, notes, url, curation_score, "
             "status, copy_data, created_at, updated_at "
             "FROM products ORDER BY updated_at DESC"
         ).fetchall()
@@ -60,12 +60,7 @@ def get_latest_listings():
         return json.load(f)
 
 
-def run_pipeline():
-    import research
-    import curation
-    import copy_generator
-    import publish
-
+def _capture_logs(fn):
     log_lines = []
 
     class LogCapture:
@@ -82,22 +77,58 @@ def run_pipeline():
 
     old_stdout = sys.stdout
     sys.stdout = LogCapture(old_stdout)
-
     try:
-        cfg = Config()
-        cfg.validate()
-        init_db(cfg.DB_PATH)
-
-        for stage_fn in [research.run, curation.run, copy_generator.run, publish.run]:
-            stage_fn(cfg)
+        fn()
     except SystemExit:
         log_lines.append("ERRO: Verifique a configuração no .env")
     except Exception as e:
         log_lines.append(f"ERRO: {e}")
     finally:
         sys.stdout = old_stdout
-
     return log_lines
+
+
+def run_filter():
+    import research
+    import curation
+
+    def _run():
+        cfg = Config()
+        init_db(cfg.DB_PATH)
+        research.run(cfg)
+        curation.run(cfg)
+
+    return _capture_logs(_run)
+
+
+def run_copy():
+    import copy_generator
+    import publish
+
+    def _run():
+        cfg = Config()
+        cfg.validate()
+        init_db(cfg.DB_PATH)
+        copy_generator.run(cfg)
+        publish.run(cfg)
+
+    return _capture_logs(_run)
+
+
+def run_pipeline():
+    import research
+    import curation
+    import copy_generator
+    import publish
+
+    def _run():
+        cfg = Config()
+        cfg.validate()
+        init_db(cfg.DB_PATH)
+        for stage_fn in [research.run, curation.run, copy_generator.run, publish.run]:
+            stage_fn(cfg)
+
+    return _capture_logs(_run)
 
 
 def reset_product(name):
@@ -153,6 +184,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
         if path == "/api/run":
             log = run_pipeline()
+            self._json_response({"status": "ok", "log": log})
+        elif path == "/api/run-filter":
+            log = run_filter()
+            self._json_response({"status": "ok", "log": log})
+        elif path == "/api/run-copy":
+            log = run_copy()
             self._json_response({"status": "ok", "log": log})
         elif path == "/api/reset":
             data = json.loads(body) if body else {}

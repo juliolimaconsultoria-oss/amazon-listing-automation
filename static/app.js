@@ -81,6 +81,15 @@ function scoreBar(score) {
     </div>`;
 }
 
+// Link helper
+function productLink(url) {
+  if (!url) return '<span class="text-muted">—</span>';
+  return `<a href="${esc(url)}" target="_blank" rel="noopener" class="product-link" title="${esc(url)}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    Amazon
+  </a>`;
+}
+
 // Dashboard table
 function renderDashboardTable() {
   const tbody = document.getElementById('dashboard-table');
@@ -108,6 +117,7 @@ function renderProductsTable() {
       <td>${p.demand_score}/10</td>
       <td>${scoreBar(p.curation_score)}</td>
       <td>${statusBadge(p.status)}</td>
+      <td>${productLink(p.url)}</td>
       <td>
         <div class="actions">
           ${p.copy_data ? `<button class="btn btn-sm btn-ghost" onclick="viewCopy('${esc(p.name)}')">Ver Copy</button>` : ''}
@@ -209,54 +219,87 @@ document.getElementById('modal-overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
 });
 
-// Pipeline
-async function runPipeline() {
-  const btn = document.getElementById('btn-run');
-  const consoleEl = document.getElementById('console');
-
-  // Switch to pipeline page
+// Switch to pipeline page and show console
+function showPipelinePage() {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   document.querySelector('[data-page="pipeline"]').classList.add('active');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-pipeline').classList.add('active');
+}
+
+function renderLog(consoleEl, log) {
+  consoleEl.innerHTML = (log || []).map(line => {
+    let cls = 'console-line';
+    if (line.includes('ERRO')) cls += ' error';
+    else if (line.includes('OK:') || line.includes('Conclu')) cls += ' success';
+    else if (line.includes('Iniciando') || line.includes('===')) cls += ' info';
+    return `<p class="${cls}">${esc(line)}</p>`;
+  }).join('');
+}
+
+// Filter: research + curation only
+async function runFilter() {
+  const btn = document.getElementById('btn-filter');
+  const consoleEl = document.getElementById('console');
+  showPipelinePage();
 
   btn.disabled = true;
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Executando...`;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Filtrando...`;
+  consoleEl.innerHTML = '<p class="console-line info">Importando e filtrando produtos...</p>';
 
-  consoleEl.innerHTML = '<p class="console-line info">Iniciando pipeline...</p>';
-
-  // Animate steps
   const steps = ['research', 'curation', 'copy', 'publish'];
-  steps.forEach(s => {
-    document.getElementById('step-' + s).classList.remove('running', 'done');
-  });
+  steps.forEach(s => document.getElementById('step-' + s).classList.remove('running', 'done'));
+  document.getElementById('step-research').classList.add('running');
 
   try {
-    document.getElementById('step-research').classList.add('running');
-    const result = await postJSON('/api/run');
+    const result = await postJSON('/api/run-filter');
 
-    // Show log
-    steps.forEach(s => {
-      document.getElementById('step-' + s).classList.remove('running');
-      document.getElementById('step-' + s).classList.add('done');
-    });
+    document.getElementById('step-research').classList.replace('running', 'done');
+    document.getElementById('step-curation').classList.add('done');
 
-    consoleEl.innerHTML = (result.log || []).map(line => {
-      let cls = 'console-line';
-      if (line.includes('ERRO')) cls += ' error';
-      else if (line.includes('OK:') || line.includes('Conclu')) cls += ' success';
-      else if (line.includes('Iniciando') || line.includes('===')) cls += ' info';
-      return `<p class="${cls}">${esc(line)}</p>`;
-    }).join('');
-
-    toast('Pipeline concluído com sucesso!', 'success');
+    renderLog(consoleEl, result.log);
+    toast('Filtragem concluída! Revise os produtos e clique em "Gerar Copys".', 'success');
     await loadAll();
   } catch (err) {
     consoleEl.innerHTML += `<p class="console-line error">Erro: ${esc(err.message)}</p>`;
-    toast('Erro ao executar pipeline.', 'error');
+    toast('Erro ao filtrar produtos.', 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Executar`;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Filtrar Produtos`;
+  }
+}
+
+// Copy generation + export
+async function runCopy() {
+  const btn = document.getElementById('btn-copy');
+  const consoleEl = document.getElementById('console');
+  showPipelinePage();
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Gerando...`;
+  consoleEl.innerHTML = '<p class="console-line info">Gerando copys com IA (pode demorar)...</p>';
+
+  const steps = ['research', 'curation', 'copy', 'publish'];
+  steps.forEach(s => document.getElementById('step-' + s).classList.remove('running', 'done'));
+  document.getElementById('step-research').classList.add('done');
+  document.getElementById('step-curation').classList.add('done');
+  document.getElementById('step-copy').classList.add('running');
+
+  try {
+    const result = await postJSON('/api/run-copy');
+
+    document.getElementById('step-copy').classList.replace('running', 'done');
+    document.getElementById('step-publish').classList.add('done');
+
+    renderLog(consoleEl, result.log);
+    toast('Copys geradas e exportadas com sucesso!', 'success');
+    await loadAll();
+  } catch (err) {
+    consoleEl.innerHTML += `<p class="console-line error">Erro: ${esc(err.message)}</p>`;
+    toast('Erro ao gerar copys.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Gerar Copys`;
   }
 }
 
