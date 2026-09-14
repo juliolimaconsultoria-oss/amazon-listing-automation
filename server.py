@@ -95,7 +95,7 @@ def run_filter():
     def _run():
         cfg = Config()
         init_db(cfg.DB_PATH)
-        research.run(cfg)
+        research.run(cfg, use_scraper=True)
         curation.run(cfg)
 
     return _capture_logs(_run)
@@ -148,7 +148,7 @@ def run_refresh():
             print(f"[atualizar] {removed} produto(s) rejeitado(s) removido(s).")
         finally:
             conn.close()
-        research.run(cfg)
+        research.run(cfg, use_scraper=True)
         curation.run(cfg)
 
     return _capture_logs(_run)

@@ -6,7 +6,7 @@ from storage import init_db, insert_product, product_exists
 
 
 def load_candidates(csv_path: str) -> list:
-    """Lê candidatos do CSV. Isole aqui para trocar por API futura."""
+    """Lê candidatos do CSV (fallback)."""
     candidates = []
     with open(csv_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -15,12 +15,31 @@ def load_candidates(csv_path: str) -> list:
     return candidates
 
 
-def run(config: Config) -> None:
+def load_from_scraper() -> list:
+    """Busca candidatos via scraper da Amazon."""
+    import scraper
+    return scraper.run()
+
+
+def run(config: Config, use_scraper: bool = False) -> None:
     print("[pesquisa] Iniciando etapa de pesquisa...")
     init_db(config.DB_PATH)
 
-    candidates = load_candidates(config.CANDIDATES_CSV)
-    print(f"[pesquisa] {len(candidates)} candidato(s) encontrado(s) no CSV.")
+    candidates = []
+
+    if use_scraper:
+        try:
+            candidates = load_from_scraper()
+        except Exception as e:
+            print(f"[pesquisa] ERRO no scraper: {e}")
+
+        if not candidates:
+            print("[pesquisa] Scraper não retornou produtos. Usando CSV como fallback...")
+            candidates = load_candidates(config.CANDIDATES_CSV)
+    else:
+        candidates = load_candidates(config.CANDIDATES_CSV)
+
+    print(f"[pesquisa] {len(candidates)} candidato(s) encontrado(s).")
 
     new_count = 0
     skip_count = 0

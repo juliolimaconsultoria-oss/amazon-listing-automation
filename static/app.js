@@ -244,8 +244,8 @@ async function runFilter() {
   showPipelinePage();
 
   btn.disabled = true;
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Filtrando...`;
-  consoleEl.innerHTML = '<p class="console-line info">Importando e filtrando produtos...</p>';
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Buscando na Amazon...`;
+  consoleEl.innerHTML = '<p class="console-line info">Buscando produtos na Amazon (Best Sellers + New Releases)...</p>';
 
   const steps = ['research', 'curation', 'copy', 'publish'];
   steps.forEach(s => document.getElementById('step-' + s).classList.remove('running', 'done'));
@@ -258,14 +258,14 @@ async function runFilter() {
     document.getElementById('step-curation').classList.add('done');
 
     renderLog(consoleEl, result.log);
-    toast('Filtragem concluída! Revise os produtos e clique em "Gerar Copys".', 'success');
+    toast('Busca concluída! Revise os produtos e clique em "Gerar Copys".', 'success');
     await loadAll();
   } catch (err) {
     consoleEl.innerHTML += `<p class="console-line error">Erro: ${esc(err.message)}</p>`;
-    toast('Erro ao filtrar produtos.', 'error');
+    toast('Erro ao buscar produtos.', 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Filtrar Produtos`;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Buscar &amp; Filtrar`;
   }
 }
 
